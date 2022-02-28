@@ -35,10 +35,9 @@ def process_xml_to_df(dir, attack):
                             system_data[event2.attrib.get("Name")].append(event2.text)
 
     df = pd.DataFrame.from_dict(system_data, orient='index').transpose()
-    file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'data\\processed')) + "\\" + attack + ".txt"
+    file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'data\\processed')) + "\\" + attack + ".csv"
 
-    with open(file_name, "w+") as f:
-        f.write(tabulate(df, headers='keys'))
+    df.to_csv(file_name)
 
 
 def main():
@@ -49,7 +48,7 @@ def main():
     logger.info('creating final dataset from raw data')
 
     data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'data\\interim'))
-    attacks = ["password_spraying", "dc_shadow", "kerberoasting", "golden_ticket"]
+    attacks = ["password_spraying", "dc_shadow", "kerberoasting", "golden_ticket", "normal_events"]
 
     for attack in attacks:
         path = data_dir + "\\" + attack + ".xml"

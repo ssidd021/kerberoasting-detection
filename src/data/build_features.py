@@ -4,7 +4,7 @@ import numpy as np
 from tabulate import tabulate
 
 
-def build_connection_features(df, attack, range=5):
+def build_connection_features(df, is_attack=True, range=5):
     # Check if Event ID 1 found in range
     mask = df['EventID'].eq(1).rolling(range).sum().ge(1)
     df.loc[mask, 'EventID_1'] = '1'
@@ -53,10 +53,12 @@ def build_connection_features(df, attack, range=5):
     except ValueError:
         pass
 
-    write_to_file(df, attack)
+    df['is_attack'] = is_attack
+
+    return df
 
 
-def build_time_features(df, attack, range=5):
+def build_time_features(df, is_attack=True, range=5):
     # Check if Event ID 1 found in range
     mask = df['EventID'].eq(1).rolling(range, on=df.index).sum().ge(1)
     df.loc[mask, 'EventID_1'] = '1'
@@ -109,35 +111,50 @@ def build_time_features(df, attack, range=5):
     except ValueError:
         pass
 
-    write_to_file(df, attack)
+    df['is_attack'] = is_attack
+
+    return df
 
 
 def write_to_file(df, attack):
-    file_path = path.abspath(path.join(__file__, "..")) + "\\features\\" + attack + ".txt"
-
-    with open(file_path, "w+") as f:
+    file_path = path.abspath(path.join(__file__, "../..")) + "\\features\\" + attack + ".txt"
+    with open(file_path, "w+", encoding="utf-8") as f:
         f.write(tabulate(df, headers='keys'))
 
 
-def create_dataset(file_path):
-    df = pd.read_csv(file_path)
+def write_csv_to_file(df, attack):
+    file_path = path.abspath(path.join(__file__, "../../..")) + "\\data\\datasets_with_features\\" + attack + ".csv"
+    df.to_csv(file_path)
+
+
+def create_dataset(path):
+    df = pd.read_csv(path)
     df['UtcTime'] = pd.to_datetime(df['UtcTime']).apply(lambda x: x.replace(microsecond=0))
-    df.drop_duplicates('UtcTime', keep='first', inplace=True)
+    # df.drop_duplicates('UtcTime', keep='first', inplace=True)
     df.set_index(['UtcTime'], inplace=True)
     df = df.sort_index()
-    df.groupby('SourceHostname')
+
+    try:
+        df.groupby('SourceHostname')
+    except KeyError:
+        pass
     # TODO: Group by SourceHostName when finding rolling values
     return df
 
 
 def main():
-    dir = path.abspath(path.join(__file__, "../..")) + "\\data\\"
-    attacks = ["brute_force", "kerberoasting", "apt_sim"]
+    dir = path.abspath(path.join(__file__, "../../..")) + "\\data\\processed\\"
+    attacks = ["apt_sim", "kerberoasting", "brute_force", "dc_shadow", "dc_sync",
+               "golden_ticket", "password_spraying", "remote_process_injection", "normal_events"]
 
     for attack in attacks:
         file_path = dir + attack + ".csv"
-        df = create_dataset(file_path)
-        build_connection_features(df, attack)
+        inital_df = create_dataset(file_path)
+        if attack == "normal_events":
+            df = build_connection_features(inital_df, is_attack=False)
+        else:
+            df = build_connection_features(inital_df)
+        write_csv_to_file(df, attack)
 
 
 if __name__ == "__main__":
